@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt  
-  
 from scipy.integrate import odeint
 
 from pbtk import AbstractPBTKModel
+
 
 class RatPBTKModel(AbstractPBTKModel):  
     """  
