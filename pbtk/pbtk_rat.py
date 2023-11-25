@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt  
 
 from pbtk import AbstractPBTKModel
+from Animals.Mammals.Rat import Rat
 
-
-class RatPBTKModel(AbstractPBTKModel):  
+#export PYTHONPATH="${PYTHONPATH}:
+class RatPBTKModel(AbstractPBTKModel, Rat):  
     """  
 This class implements a four-compartment Physiologically Based Toxicokinetic (PBTK) model for a rat.   
   
@@ -41,20 +42,24 @@ The results of the model can be plotted using the `plot_results` method, which c
 The model can also save the plots to files using the `save_plots` method.  
 """  
 
-    def __init__(self, Q_c=5.25, Q_p=5.25, Q_f=0.47, Q_l=1.31, Q_s=0.79, Q_r=2.68,   
-                 V_f=0.022, V_l=0.012, V_s=0.174, V_r=0.012,   
-                 P_f=56.72, P_l=4.64, P_s=1.54, P_r=4.64, P_b=18,   
-                 Vmax=1.66, Km=0.55, C_inh_n=0.75,   
+    def __init__(self,
+                 P_f=56.72, P_l=4.64, P_s=1.54, P_r=4.64, P_b=18,
+                 V_max=1.66, K_m=0.55,
+                 C_inh_n=0.75,   
                  C_l=0, C_f=0, C_s=0, C_r=0, C_v=0,
                  integration_step=0.005,
                  exposure_time=4,
-                 simulation_time=7):    
+                 simulation_time=7): 
         
-        # Parameters    
-        self.Q_c, self.Q_p, self.Q_f, self.Q_l, self.Q_s, self.Q_r = Q_c, Q_p, Q_f, Q_l, Q_s, Q_r    
-        self.V_f, self.V_l, self.V_s, self.V_r = V_f, V_l, V_s, V_r    
-        self.P_f, self.P_l, self.P_s, self.P_r, self.P_b = P_f, P_l, P_s, P_r, P_b    
-        self.Vmax, self.Km = Vmax, Km    
+        # Initialize Rat class  
+        Rat.__init__(self)    
+        
+        # Metabolism parameters
+        self.V_max, self.K_m = V_max, K_m
+        
+        # Parameters molecule interaction with tissues
+        self.P_f, self.P_l, self.P_s, self.P_r, self.P_b = P_f, P_l, P_s, P_r, P_b   
+         
         self.integration_step = integration_step
         self.exposure_time = exposure_time
         self.simulation_time = simulation_time
@@ -78,20 +83,20 @@ The model can also save the plots to files using the `save_plots` method.
             C_a = round((self.Q_c*self.C_v + self.Q_p*self.C_inh_n) / (self.Q_c + (self.Q_p/self.P_b)),2)  
   
             # Liver  
-            dc_l_dt = round( (self.Q_l/self.V_l) * (C_a - self.C_l/self.P_l) - ((self.Vmax/self.V_l * self.C_l/self.P_l)/(self.Km + self.C_l/self.P_l)),2)  
-            self.C_l = round(dc_l_dt * self.integration_step + self.C_l,2)  
+            dc_l_dt = round( (self.Q_l/self.V_l) * (C_a - self.C_l/self.P_l) - ((self.V_max/self.V_l * self.C_l/self.P_l)/(self.K_m + self.C_l/self.P_l)),2)  
+            self.C_l = self.calculate_integral(dc_l_dt, self.integration_step, self.C_l)
   
             # Fat  
             dc_f_dt = round(self.Q_f/self.V_f * (C_a - self.C_f / self.P_f),2)  
-            self.C_f = round(dc_f_dt * self.integration_step + self.C_f,2)  
+            self.C_f = self.calculate_integral(dc_f_dt, self.integration_step, self.C_f)
   
             # Poorly perfused tissue  
             dc_s_dt = round(self.Q_s/self.V_s * (C_a - self.C_s / self.P_s),2)  
-            self.C_s = round(dc_s_dt * self.integration_step + self.C_s,2)  
+            self.C_s = self.calculate_integral(dc_s_dt, self.integration_step, self.C_s)
   
             # Richly perfused tissue  
             dc_r_dt = round(self.Q_r/self.V_r * (C_a - self.C_r / self.P_r),2)  
-            self.C_r = round(dc_r_dt * self.integration_step + self.C_r,2)  
+            self.C_r = self.calculate_integral(dc_r_dt, self.integration_step, self.C_r)
   
             # Venous blood  
             self.C_v = round((self.Q_l * self.C_l/self.P_l + self.Q_f*self.C_f/self.P_f + self.Q_s * self.C_s/self.P_s + self.Q_r * self.C_r/self.P_r) / (self.Q_c),2)  
@@ -150,7 +155,7 @@ The model can also save the plots to files using the `save_plots` method.
         plt.close(fig2)  # Close the figure  
 
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
     model = RatPBTKModel()  
     model.calculate_concentrations()  
-    model.save_plots('plots/plot1.png', 'plots/plot2.png')  
+    model.plot_results()  

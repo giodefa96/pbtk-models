@@ -16,3 +16,6 @@ class AbstractPBTKModel(ABC):
     @abstractmethod  
     def save_plots(self, filename1, filename2):  
         pass  
+    
+    def calculate_integral(self, derivate, t, C):
+        return derivate * t + C 

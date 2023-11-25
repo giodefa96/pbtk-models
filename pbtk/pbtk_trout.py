@@ -105,27 +105,27 @@ class TroutePBTKModel(AbstractPBTKModel):
             
             # Liver metabolism
             dc_met_dt = (self.V_max*self.C_l/self.P_l)/(self.K_m + self.C_l/self.P_l) / self.V_l
-            self.C_m = dc_met_dt*self.integration_step+self.C_m            
+            self.C_m = self.calculate_integral(dc_met_dt, self.integration_step, self.C_m)
             # Liver
             dcl_dt = (self.Q_l*C_a + self.Q_r*self.C_r/self.P_r)/self.V_l - (self.Q_l+self.Q_r)/self.V_l * self.C_l/self.P_l - dc_met_dt
-            self.C_l = dcl_dt*self.integration_step+self.C_l
+            self.C_l = self.calculate_integral(dcl_dt, self.integration_step, self.C_l)
 
             
             # Fat Tissue
             dc_f_dt = self.Q_f/self.V_f*(C_a-self.C_f/self.P_f)
-            self.C_f = dc_f_dt*self.integration_step+self.C_f # an integration it would be better
+            self.C_f = self.calculate_integral(dc_f_dt, self.integration_step, self.C_f)
             
             # Richly perfused tissue
             dc_r_dt = self.Q_r/self.V_r*(C_a-self.C_r/self.P_r)
-            self.C_r = dc_r_dt*self.integration_step+self.C_r
+            self.C_r = self.calculate_integral(dc_r_dt, self.integration_step, self.C_r)
             
             # Poorly perfused tissue
             dc_s_dt = self.Q_s/self.V_s*(C_a-self.C_s/self.P_s)
-            self.C_s = dc_s_dt*self.integration_step+self.C_s
+            self.C_s = self.calculate_integral(dc_s_dt, self.integration_step, self.C_s)
             
             # Kidney
             dc_k_dt = ((self.Q_k * C_a + 0.6 * self.Q_s * self.C_s/self.P_s) / self.V_k) - ((self.Q_k + 0.6 * self.Q_s) / self.V_k) * (self.C_k/self.P_k)
-            self.C_k += dc_k_dt*self.integration_step
+            self.C_k = self.calculate_integral(dc_k_dt, self.integration_step, self.C_k)
         
             # Append results to lists
             self.C_a_list.append(C_a)
