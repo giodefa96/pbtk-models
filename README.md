@@ -11,6 +11,7 @@ PBTK models are increasingly being used as an effective tool for designing toxic
 To use this project, you can create a PBTK model for a specific species like this:  
   
 ```python  
+export PYTHONPATH="${PYTHONPATH}:src"
 model = RatPBTKModel()  
 model.calculate_concentrations()  
 model.plot_results()  

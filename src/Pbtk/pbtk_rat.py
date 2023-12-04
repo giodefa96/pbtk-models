@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from pbtk import AbstractPBTKModel
 from Animals.Mammals.Rat import Rat
 
+from Molecules.perchloroethylene import Perchloroethylene  
+
 #export PYTHONPATH="${PYTHONPATH}:
 class RatPBTKModel(AbstractPBTKModel, Rat):  
     """  
@@ -43,22 +45,39 @@ The model can also save the plots to files using the `save_plots` method.
 """  
 
     def __init__(self,
-                 P_f=56.72, P_l=4.64, P_s=1.54, P_r=4.64, P_b=18,
-                 V_max=1.66, K_m=0.55,
-                 C_inh_n=0.75,   
-                 C_l=0, C_f=0, C_s=0, C_r=0, C_v=0,
+                 rat,
+                 molecule,
+                 C_inh_n=0.75,
                  integration_step=0.005,
                  exposure_time=4,
                  simulation_time=7): 
         
-        # Initialize Rat class  
-        Rat.__init__(self)    
         
-        # Metabolism parameters
-        self.V_max, self.K_m = V_max, K_m
+        super().__init__()  # Call the parent class constructor if necessary  
+        self.rat = rat  # Initialize the Rat class  
+  
+        # Now you can access the parameters of the Rat class using the rat object  
+        self.Q_c = self.rat.Q_c  
+        self.Q_p = self.rat.Q_p  
+        self.Q_f = self.rat.Q_f  
+        self.Q_l = self.rat.Q_l  
+        self.Q_s = self.rat.Q_s  
+        self.Q_r = self.rat.Q_r  
+        self.V_f = self.rat.V_f  
+        self.V_l = self.rat.V_l  
+        self.V_s = self.rat.V_s  
+        self.V_r = self.rat.V_r  
+        
+        
+        
+        self.molecule = molecule  # Initialize the Molecule class  
+        
+        # Metabolism parameters  
+        self.V_max, self.K_m = self.molecule.V_max, self.molecule.K_m
         
         # Parameters molecule interaction with tissues
-        self.P_f, self.P_l, self.P_s, self.P_r, self.P_b = P_f, P_l, P_s, P_r, P_b   
+        self.P_f, self.P_l, self.P_s = self.molecule.P_f, self.molecule.P_l, self.molecule.P_s
+        self.P_r, self.P_b =  self.molecule.P_r, self.molecule.P_b   
          
         self.integration_step = integration_step
         self.exposure_time = exposure_time
@@ -69,7 +88,7 @@ The model can also save the plots to files using the `save_plots` method.
     
         # Initial conditions    
         self.C_inh_n = C_inh_n    
-        self.C_l, self.C_f, self.C_s, self.C_r, self.C_v = C_l, C_f, C_s, C_r, C_v    
+        self.C_l, self.C_f, self.C_s, self.C_r, self.C_v = self.rat.C_l, self.rat.C_f, self.rat.C_s, self.rat.C_r, self.rat.C_v    
     
         # Lists to store results    
         self.C_a_list, self.C_v_list, self.C_l_list, self.C_f_list, self.C_s_list, self.C_r_list = [], [], [], [], [], []    
@@ -156,6 +175,8 @@ The model can also save the plots to files using the `save_plots` method.
 
 
 if __name__ == '__main__':
-    model = RatPBTKModel()  
+    rat = Rat()
+    perchloroethylene = Perchloroethylene()
+    model = RatPBTKModel(rat, perchloroethylene)  
     model.calculate_concentrations()  
     model.plot_results()  

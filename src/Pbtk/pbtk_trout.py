@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt  
 
 from pbtk import AbstractPBTKModel
+from Animals.Fishes.Trout import Trout
+from Molecules.Tetrachloroethane import Tetrachloroethane
 
 
 import matplotlib.pyplot as plt  
@@ -34,41 +36,45 @@ class TroutePBTKModel(AbstractPBTKModel):
         Saves the plots to a file.  
     """  
     def __init__(self,
-                 B_w=1.0,
-                 Q_g=7.2, Q_c=2.07,
-                 V_cf= 0.098, V_lc=0.012, V_sc=0.818, V_rc=0.063, V_kc=0.009,
-                 Q_fc=0.085, Q_lc=0.029, Q_sc=0.600, Q_rc=0.230, Q_kc=0.056,
-                 V_max=0, K_m=0.000001,
-                 P_l=2.55, P_f=44.9, P_r=2.55, P_s=2.46, P_k=3.07, P_b=5.17,
+                 trout,
+                 molecule,
                  T_stop=70, Dur_exp=48, C_int=0.25, C_ont=1.06,
                  integration_step=0.05):
         
+        # Initialize the Trout class
+        self.trout = trout
+        
         # Parameters
         # Flows
-        self.Q_f = Q_fc*Q_c
-        self.Q_s = Q_sc*Q_c
-        self.Q_r = Q_rc*Q_c
-        self.Q_l = Q_lc*Q_c
-        self.Q_k = Q_kc*Q_c
+        self.Q_f = self.trout.Q_f
+        self.Q_s = self.trout.Q_s
+        self.Q_r = self.trout.Q_r
+        self.Q_l = self.trout.Q_l
+        self.Q_k = self.trout.Q_k
         
         # Volumes
-        self.V_r = V_rc*B_w
-        self.V_s = V_sc*B_w
-        self.V_f = V_cf*B_w
-        self.V_l = V_lc*B_w
-        self.V_k = V_kc*B_w
+        self.V_r = self.trout.V_r
+        self.V_s = self.trout.V_s
+        self.V_f = self.trout.V_f
+        self.V_l = self.trout.V_l
+        self.V_k = self.trout.V_k
         
         # Parameters
-        self.Q_c = Q_c
-        self.P_b = P_b
-        self.Q_g = Q_g
-        self.P_f = P_f
-        self.P_l = P_l
-        self.P_r = P_r
-        self.P_s = P_s
-        self.P_k = P_k
-        self.V_max = V_max
-        self.K_m = K_m
+        self.Q_c = self.trout.Q_c
+        self.Q_g = self.trout.Q_g
+        
+        
+        # Initialize the Molecule class
+        self.molecule = molecule
+        
+        self.P_b = self.molecule.P_b
+        self.P_f = self.molecule.P_f
+        self.P_l = self.molecule.P_l
+        self.P_r = self.molecule.P_r
+        self.P_s = self.molecule.P_s
+        self.P_k = self.molecule.P_k
+        self.V_max = self.molecule.V_max
+        self.K_m =self.molecule.K_m
         
         self.integration_step = integration_step
         self.exposure_time = Dur_exp
@@ -79,7 +85,9 @@ class TroutePBTKModel(AbstractPBTKModel):
         # Initial conditions
         self.C_insp = C_ont
         self.C_int = C_int
-        self.C_f, self.C_s, self.C_r, self.C_l, self.C_k, self.C_v, self.C_m = 0, 0, 0, 0, 0, 0, 0
+        self.C_a, self.C_m = self.trout.C_a, self.trout.C_m
+        self.C_f, self.C_s, self.C_r = self.trout.C_f, self.trout.C_s, self.trout.C_r
+        self.C_l, self.C_k, self.C_v = self.trout.C_l, self.trout.C_k, self.trout.C_v
         
         # Lists to store results
         self.C_a_list, self.C_v_list, self.C_l_list, self.C_f_list, self.C_s_list, self.C_r_list, self.C_k_list = [], [], [], [], [], [], []
@@ -231,8 +239,12 @@ class TroutePBTKModel(AbstractPBTKModel):
         
 
 if __name__ == '__main__':
+    # Instantiate the trout
+    trout = Trout()
+    # Instantiate the molecule
+    molecule = Tetrachloroethane()
     # Instantiate the model
-    model = TroutePBTKModel()
+    model = TroutePBTKModel(trout=trout, molecule=molecule)
     
     # Run the model
     model.calculate_concentrations()
